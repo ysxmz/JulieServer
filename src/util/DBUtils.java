@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import com.mysql.jdbc.Connection;
 import com.mysql.jdbc.Statement;
 
+import model.Foot;
+
 public class DBUtils {
 	private Connection conn;
 	private String url = "jdbc:mysql://127.0.0.1:3306/juliedb"; // 指定连接数据库的URL
@@ -139,6 +141,42 @@ public class DBUtils {
 		} catch (SQLException e) {
 			System.out.println("Error: " + e.getMessage());
 		}
+	}
+
+	/**
+	 * 当有人发布订单后，向数据库插入订单信息
+	 * @param foot
+	 * @return
+	 */
+	public boolean insertFootToDB(Foot foot) {
+		String sql = " insert into t_foot ( footId , userId , phone , name , address , content , reward ,state) values "
+				+ "('" + foot.getFootId() + "', '" + foot.getUserId()+ "', '" +foot.getPhone()+ "', '" +foot.getName()+ "', '" +foot.getAddress()+ "', '" +foot.getContent()+ "', '" +foot.getReward()+ "', '" +foot.getState()
+				+ "')";
+		try {
+			System.out.println(sql);
+			sta = (Statement) conn.createStatement();
+			
+			return sta.execute(sql);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
+	
+	public String queryIfNewFoot(){
+		String content ="null";
+		String sql ="select content from t_foot where CreateTime >= now()-interval 5 minute order by CreateTime desc limit 1;";
+		try {
+			sta = (Statement) conn.createStatement();
+			rs = sta.executeQuery(sql);// 获得结果集
+			if (rs != null) {
+				while(rs.next())
+				return rs.getString("content");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return content;
 	}
 
 }
