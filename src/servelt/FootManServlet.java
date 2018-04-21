@@ -1,33 +1,31 @@
 package servelt;
 
-import com.google.gson.Gson;
-
-import model.BaseBean;
-import model.UserBean;
-import util.DBUtils;
-
 import java.io.IOException;
+import java.util.ArrayList;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.gson.Gson;
+
+import model.BaseBean;
+import model.Order;
+import util.DBUtils;
+
 /**
- * Servlet implementation class RegisterServlet
+ * Servlet implementation class FootManServlet
  */
-@WebServlet("/ForgetServlet")
-public class ForgetServlet extends HttpServlet {
+@WebServlet("/FootManServlet")
+public class FootManServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	public static final int NAME_PWD = 1;
-	public static final int ERROR_PWD = 2;
-	public static final int NO_NAME = 3;
-	public static final int ERROR = 4;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
-	public ForgetServlet() {
+	public FootManServlet() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
@@ -39,34 +37,23 @@ public class ForgetServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
-
 		response.setContentType("text/html;charset=utf-8");
-		String username = request.getParameter("username"); // 获取客户端传过来的参数
-		String password = request.getParameter("password");
 
-		if (username == null || username.equals("") || password == null || password.equals("")) {
-			System.out.println("用户名或密码为空");
-			return;
-		}
-
+		/**
+		 * 去数据库进行查询，获取所有订单信息，返回ArrayList对象
+		 */
 		// 请求数据库
 		DBUtils dbUtils = new DBUtils();
 		dbUtils.openConnect(); // 打开数据库连接
 		BaseBean data = new BaseBean(); // 基类对象，回传给客户端的json对象
-		UserBean userBean = new UserBean(); // user的对象
-		int id=dbUtils.isNameExistInDB(username);
-		if (id==-1) { // 判断账号是否存在
-			data.setCode(-1);
-			data.setData(userBean);
-			data.setMsg("该账号不存在");
-		} else if (!dbUtils.updatePwdToDB(id, password)) {
+		ArrayList<Order> orderList = dbUtils.getOrderList();
+		if (orderList.size()>0) {
 			data.setCode(1);
-			data.setData(userBean);
-			data.setMsg("修改成功");
-		} else { // 修改不成功，这里错误没有细分，都归为数据库错误
-			data.setCode(500);
-			data.setData(userBean);
-			data.setMsg("数据库错误");
+			data.setMsg("查询成功");
+			data.setOrderList(orderList);
+		} else { // 注册不成功，这里错误没有细分，都归为数据库错误
+			data.setCode(0);
+			data.setMsg("没有订单");
 		}
 		Gson gson = new Gson();
 		String json = gson.toJson(data); // 将对象转化成json字符串

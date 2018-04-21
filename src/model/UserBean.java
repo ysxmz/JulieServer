@@ -4,6 +4,22 @@ public class UserBean {
 	private String username;
 	private String password;
 	private int id;
+	private String userpicUrl;
+	private String nickname;
+	
+	
+	public String getUserpicUrl() {
+		return userpicUrl;
+	}
+	public void setUserpicUrl(String userpicUrl) {
+		this.userpicUrl = userpicUrl;
+	}
+	public String getNickname() {
+		return nickname;
+	}
+	public void setNickname(String nickname) {
+		this.nickname = nickname;
+	}
 	public int getId() {
 		return id;
 	}
