@@ -8,6 +8,35 @@ public class BaseBean {
 	private Object data;
 	private ArrayList<Order> orderList;
 	private ArrayList<Comm> commList;
+	private ArrayList<Discount> discountList;
+	private ArrayList<MessShow> messList;
+	private ArrayList<InfoShow> infoList;
+
+	
+	public ArrayList<InfoShow> getInfoList() {
+		return infoList;
+	}
+
+	public void setInfoList(ArrayList<InfoShow> infoList) {
+		this.infoList = infoList;
+	}
+
+	public ArrayList<MessShow> getMessList() {
+		return messList;
+	}
+
+	public void setMessList(ArrayList<MessShow> messList) {
+		this.messList = messList;
+	}
+
+	public ArrayList<Discount> getDiscountList() {
+		return discountList;
+	}
+
+	public void setDiscountList(ArrayList<Discount> discountList) {
+		this.discountList = discountList;
+	}
+
 	public ArrayList<Comm> getCommList() {
 		return commList;
 	}

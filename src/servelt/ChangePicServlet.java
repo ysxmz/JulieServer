@@ -1,30 +1,26 @@
 package servelt;
 
-import java.io.*;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import javax.servlet.*;
-import javax.servlet.http.*;
-
-import com.google.gson.Gson;
-
-import model.BaseBean;
-import model.UserBean;
-import util.DBUtils;
-
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- * Servlet implementation class RegisterServlet
- */
-@WebServlet("/LoginServlet")
-public class LoginServlet extends HttpServlet {
+import com.google.gson.Gson;
+import com.mysql.jdbc.util.Base64Decoder;
+
+import model.BaseBean;
+import model.UserBean;
+import sun.misc.BASE64Decoder;
+import util.Base64Utils;
+import util.DBUtils;
+
+@WebServlet("/ChangePicServlet")
+public class ChangePicServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	public static final int NAME_PWD = 1;
 	public static final int ERROR_PWD = 2;
@@ -34,7 +30,7 @@ public class LoginServlet extends HttpServlet {
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
-	public LoginServlet() {
+	public ChangePicServlet() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
@@ -46,11 +42,13 @@ public class LoginServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		String username = request.getParameter("username"); // 获取客户端传过来的参数
-		String password = request.getParameter("password");
 
-		if (username == null || username.equals("") || password == null || password.equals("")) {
-			System.out.println("用户名或密码为空");
+		response.setContentType("text/html;charset=utf-8");
+		String username = request.getParameter("username"); // 获取客户端传过来的参数
+		String userpicstring = request.getParameter("userpicstring");
+
+		if (username == null || username.equals("") || userpicstring == null || userpicstring.equals("")) {
+			System.out.println("用户名或图片为空");
 			return;
 		}
 
@@ -59,22 +57,31 @@ public class LoginServlet extends HttpServlet {
 		dbUtils.openConnect(); // 打开数据库连接
 		BaseBean data = new BaseBean(); // 基类对象，回传给客户端的json对象
 		UserBean userBean = new UserBean(); // user的对象
-		if (dbUtils.isExistInDB(username, password) == ERROR_PWD) { // 判断账号是否存在
+
+		String imageName = username + ".jpg";
+		System.out.println(getServletContext().getRealPath("/images"));
+		String path = getServletContext().getRealPath("/images/" + imageName);
+		int id = dbUtils.isNameExistInDB(username);
+
+		if (!Base64Utils.GenerateImage(userpicstring, path)) {
+			data.setCode(-2);
+			data.setData(data);
+			data.setMsg("图片出错了");
+		}
+		if (id == -1) { // 判断账号是否存在
 			data.setCode(-1);
-			
-			data.setMsg("密码错误");
-		} else if (dbUtils.isExistInDB(username, password) == NO_NAME) { // 判断账号是否存在
-			data.setCode(-1);
-			data.setMsg("账号不存在");
-		} else if (dbUtils.isExistInDB(username, password) == NAME_PWD) { // 判断账号是否存在
-			data.setCode(1);
-			data.setMsg("登陆成功");
-			userBean=dbUtils.getUserFromDB(username, password);
 			data.setData(userBean);
-		} else { // 登陆不成功，这里错误没有细分，都归为数据库错误
+			data.setMsg("该账号不存在");
+		} else if (!dbUtils.uploadPicToDB(username, imageName)) {
+			data.setCode(1);
+			data.setData(userBean);
+			data.setMsg("修改成功");
+		}else { // 修改不成功，这里错误没有细分，都归为数据库错误
 			data.setCode(500);
+			data.setData(userBean);
 			data.setMsg("数据库错误");
 		}
+
 		Gson gson = new Gson();
 		String json = gson.toJson(data); // 将对象转化成json字符串
 		try {

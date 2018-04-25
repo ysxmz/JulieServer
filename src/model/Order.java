@@ -2,8 +2,11 @@ package model;
 
 public class Order {
     private String footId;
-
-    public Order(String footId, String userpicUrl, String username, String state, String content, String address, String reward, String time,String phone) {
+    private int userId;
+    private int receiveId;
+    public Order(String footId, int userId,int receiveId, String userpicUrl, String username, String state, String content, String address, String reward, String time, String phone) {
+        this.receiveId=receiveId;
+        this.userId = userId;
         this.footId = footId;
         this.userpicUrl = userpicUrl;
         this.username = username;
@@ -24,7 +27,23 @@ public class Order {
     private String time;
     private String phone;
 
-    public String getPhone() {
+    public int getUserId() {
+		return userId;
+	}
+
+	public void setUserId(int userId) {
+		this.userId = userId;
+	}
+
+	public int getReceiveId() {
+		return receiveId;
+	}
+
+	public void setReceiveId(int receiveId) {
+		this.receiveId = receiveId;
+	}
+
+	public String getPhone() {
 		return phone;
 	}
 
