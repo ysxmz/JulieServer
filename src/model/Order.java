@@ -4,6 +4,16 @@ public class Order {
     private String footId;
     private int userId;
     private int receiveId;
+    private String userpicUrl;
+    private String username;
+    private String state;
+    private String content;
+    private String address;
+    private String reward;
+    private String time;
+    private String phone;
+    private int payOnline;
+    private String addNeed;
     public Order(String footId, int userId,int receiveId, String userpicUrl, String username, String state, String content, String address, String reward, String time, String phone) {
         this.receiveId=receiveId;
         this.userId = userId;
@@ -18,16 +28,33 @@ public class Order {
         this.phone=phone;
     }
 
-    private String userpicUrl;
-    private String username;
-    private String state;
-    private String content;
-    private String address;
-    private String reward;
-    private String time;
-    private String phone;
+    
 
-    public int getUserId() {
+    public int getPayOnline() {
+		return payOnline;
+	}
+
+
+
+	public void setPayOnline(int payOnline) {
+		this.payOnline = payOnline;
+	}
+
+
+
+	public String getAddNeed() {
+		return addNeed;
+	}
+
+
+
+	public void setAddNeed(String addNeed) {
+		this.addNeed = addNeed;
+	}
+
+
+
+	public int getUserId() {
 		return userId;
 	}
 

@@ -14,9 +14,9 @@ public class Foot {
 	private String content; // 订单内容
 	private double reward; // 赏金
 	private int state; // 订单状态 1新发布 2被抢了 3已送达 4已结单
-	
+	private int payOnline;
 
-	public Foot(int userId, String phone, String name, String address, String content, double reward) {
+	public Foot(int userId, String phone, String name, String address, String content, double reward,int payOnline) {
 		this.footId = createFootId();
 		this.userId = userId;
 		this.phone = phone;
@@ -25,6 +25,7 @@ public class Foot {
 		this.content = content;
 		this.reward = reward;
 		this.state = 1;
+		this.setPayOnline(payOnline);
 	}
 
 	private String createFootId() {
@@ -99,6 +100,14 @@ public class Foot {
 
 	public void setState(int state) {
 		this.state = state;
+	}
+
+	public int getPayOnline() {
+		return payOnline;
+	}
+
+	public void setPayOnline(int payOnline) {
+		this.payOnline = payOnline;
 	}
 
 }

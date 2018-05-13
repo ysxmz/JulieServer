@@ -15,5 +15,7 @@
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry kind="lib" path="D:/mysql/mysql-connector-java-5.1.42/mysql-connector-java-5.1.42-bin.jar"/>
 	<classpathentry kind="lib" path="D:/downloadByFox/gson-2.2.3.jar"/>
+	<classpathentry kind="lib" path="D:/downloadByFox/alipay-sdk-JAVA-3.0.0/alipay-sdk-java-3.0.0-source.jar"/>
+	<classpathentry kind="lib" path="D:/downloadByFox/alipay-sdk-JAVA-3.0.0/commons-logging-1.1.1-sources.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

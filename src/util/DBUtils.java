@@ -26,6 +26,7 @@ public class DBUtils {
 
 	private Statement sta;
 	private ResultSet rs;
+	private ResultSet rs1;
 	public static final int NAME_PWD = 1;
 	public static final int ERROR_PWD = 2;
 	public static final int NO_NAME = 3;
@@ -104,6 +105,7 @@ public class DBUtils {
 							userBean.setDescribe(rs.getString("user_describe"));
 							userBean.setLocation(rs.getString("user_location"));
 							userBean.setSex(rs.getString("user_sex"));
+							userBean.setWallet(rs.getString("user_wallet"));
 						}
 					}
 				}
@@ -138,8 +140,8 @@ public class DBUtils {
 
 	// 注册 将用户名和密码插入到数据库(id设置的是自增长的，因此不需要插入)
 	public boolean insertDataToDB(String username, String password) {
-		String sql = " insert into t_user ( user_name , user_pwd ,user_nickname) values ( " + "'" + username + "', " + "'" + password+ "','" + username
-				+ "' )";
+		String sql = " insert into t_user ( user_name , user_pwd ,user_nickname) values ( " + "'" + username + "', "
+				+ "'" + password + "','" + username + "' )";
 		try {
 			sta = (Statement) conn.createStatement();
 			// 执行SQL查询语句
@@ -184,18 +186,28 @@ public class DBUtils {
 	 * 当有人发布订单后，向数据库插入订单信息
 	 * 
 	 * @param foot
+	 * @param udId
+	 * @param addNeed
+	 * @param totalMoney
 	 * @return
 	 */
-	public boolean insertFootToDB(Foot foot) {
-		String sql = " insert into t_foot ( footId , userId , phone , name , address , content , reward ,state) values "
+	public boolean insertFootToDB(Foot foot, String addNeed, String udId, String totalMoney) {
+		String sql = " insert into t_foot ( footId , userId , phone , name , address , content , reward ,state ,addNeed ,udId ,payOnline) values "
 				+ "('" + foot.getFootId() + "', '" + foot.getUserId() + "', '" + foot.getPhone() + "', '"
 				+ foot.getName() + "', '" + foot.getAddress() + "', '" + foot.getContent() + "', '" + foot.getReward()
-				+ "', '" + foot.getState() + "')";
-		try {
-			System.out.println(sql);
-			sta = (Statement) conn.createStatement();
+				+ "', '" + foot.getState() + "', '" + addNeed + "', " + udId + "," + foot.getPayOnline() + ")";
 
-			return sta.execute(sql);
+		String sql1 = "update t_user_discount set del= 1 where id = " + udId;
+		String sql2 = "update t_user set user_wallet = user_wallet - " + totalMoney + " where user_id = "
+				+ foot.getUserId();
+		try {
+			sta = (Statement) conn.createStatement();
+			sta.execute(sql);
+			if (foot.getPayOnline() == 1) {
+				sta.execute(sql1);
+				sta.execute(sql2);
+			}
+			return false;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -240,6 +252,8 @@ public class DBUtils {
 							rs.getString("user_picurl"), rs.getString("user_nickname"), rs.getString("state"),
 							rs.getString("content"), rs.getString("address"), rs.getString("reward"),
 							rs.getTimestamp("CreateTime").toString(), rs.getString("phone"));
+					o.setPayOnline(rs.getInt("payOnline"));
+					o.setAddNeed(rs.getString("addNeed"));
 					orderList.add(o);
 				}
 
@@ -318,10 +332,32 @@ public class DBUtils {
 	 * @return
 	 */
 	public boolean updateFootFromDB(String footId, int userId, int state) {
+
 		if (userId == 0) {
-			String sql = " update t_foot set state= " + " " + state + " where footId= '" + footId + "';";
 			try {
 				sta = (Statement) conn.createStatement();
+				Statement sta1=(Statement)conn.createStatement();
+				if (state == 4) {
+					int payOnline;
+					String reward;
+					int rId;
+					String s = "select * from t_foot where footId= '" + footId + "' ";
+					rs = sta1.executeQuery(s);// 获得结果集
+					if (rs != null) {
+						while (rs.next()) {
+							payOnline=rs.getInt("payOnline");
+							reward=rs.getString("reward");
+							rId=rs.getInt("receive_userId");
+							if(payOnline==1){
+								String sql2 = "update t_user set user_wallet = user_wallet + " + reward + " where user_id = "
+										+ rId;
+								sta.execute(sql2);
+							}	
+						}
+					}	
+					
+				}
+				String sql = " update t_foot set state= " + " " + state + " where footId= '" + footId + "';";
 				return sta.execute(sql);
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -405,48 +441,44 @@ public class DBUtils {
 
 	public ArrayList<Discount> getDiscountList(String userId) {
 		ArrayList<Discount> discountList = new ArrayList<Discount>();
-		String userDiscount = null;
-		String sql = "select user_discount from t_user where user_id=" + userId;
+		ArrayList<Integer> dIdList = new ArrayList<Integer>();
+		ArrayList<Integer> idList = new ArrayList<Integer>();
+
+		String sql = "select * from t_user_discount where u_id= " + userId + " and get = 1 and del = 0";
 		try {
 			sta = (Statement) conn.createStatement();
 			rs = sta.executeQuery(sql);// 获得结果集
 			if (rs != null) {
 				while (rs.next()) {
-					userDiscount = rs.getString("user_discount");
+					dIdList.add(rs.getInt("d_id"));
+					idList.add(rs.getInt("id"));
 				}
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		if (userDiscount == null) {
+		if (dIdList.isEmpty()) {
 			return null;
 		}
-		String[] as = userDiscount.split(",");
-		if (as.length == 0) {
-			return null;
-		} else if (as[0].equals("NULL")) {
-			return null;
-		} else {
-			for (int i = 0; i < as.length; i++) {
-				String s = "select * from t_discount where d_id=" + as[i];
-				try {
-					sta = (Statement) conn.createStatement();
-					rs = sta.executeQuery(s);// 获得结果集
-					if (rs != null) {
-						while (rs.next()) {
-							Discount discount = new Discount(rs.getInt("d_id"), rs.getString("d_name"),
-									rs.getString("d_money"), rs.getString("d_usable"), rs.getString("d_deadline"),
-									rs.getString("d_limit"));
-							discountList.add(discount);
-						}
+		for (int i = 0; i < dIdList.size(); i++) {
+			String s = "select * from t_discount where d_id=" + dIdList.get(i);
+			try {
+				sta = (Statement) conn.createStatement();
+				rs = sta.executeQuery(s);// 获得结果集
+				if (rs != null) {
+					while (rs.next()) {
+						Discount discount = new Discount(idList.get(i), rs.getInt("d_id"), rs.getString("d_name"),
+								rs.getString("d_money"), rs.getString("d_usable"), rs.getString("d_deadline"),
+								rs.getString("d_limit"));
+						discountList.add(discount);
 					}
-				} catch (SQLException e) {
-					e.printStackTrace();
 				}
+			} catch (SQLException e) {
+				e.printStackTrace();
 			}
-			return discountList;
-
 		}
+		return discountList;
+
 	}
 
 	/**
@@ -633,6 +665,20 @@ public class DBUtils {
 			String nickname) {
 		String sql = "update t_user set user_sex='" + usersex + "',user_location='" + userlocation + "',user_describe='"
 				+ userdescribe + "'," + "user_nickname='" + nickname + "' where user_id=" + userId + ";";
+		try {
+			System.out.println(sql);
+			sta = (Statement) conn.createStatement();
+
+			return sta.execute(sql);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
+
+	public boolean changeMoney(String userId, String wallet, String operation) {
+		String sql = "update t_user set user_wallet= user_wallet " + operation + " " + wallet + " where user_id ="
+				+ userId;
 		try {
 			System.out.println(sql);
 			sta = (Statement) conn.createStatement();

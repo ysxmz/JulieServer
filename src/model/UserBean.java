@@ -12,7 +12,7 @@ public class UserBean {
 	private String describe;
 
 	
-	
+	private String wallet;
 	public String getSex() {
 		return sex;
 	}
@@ -75,6 +75,14 @@ public class UserBean {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public String getWallet() {
+		return wallet;
+	}
+
+	public void setWallet(String wallet) {
+		this.wallet = wallet;
 	}
 
 }
